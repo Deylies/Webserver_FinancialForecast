@@ -1,0 +1,232 @@
+{% extends 'index.html' %}
+{% block link %}
+<link href="static/assets/css/lib/vector-map/jqvmap.min.css" rel="stylesheet">
+{% endblock %}
+{% block body %}
+<div class="content mt-3">
+    <div class="col-lg-6" style="width:40%;">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">功能选项</strong>
+            </div>
+            <div class="card-body">
+                <div class="row form-group">
+                    <form action="{{url_for('upload')}}" method="post" enctype='multipart/form-data'>
+                        <div class="col col-md-3"><label for="csv_input"
+                                                         class=" form-control-label">选择上传文件(CSV格式)</label>
+                        </div>
+                        <div class="col-12 col-md-9">
+                            <input type="file" id="csv_input" name="file-multiple-input" multiple=""
+                                   class="form-control-file">
+                            <input type="submit" onclick="uploadPic()" class="btn btn-success" value="上传"
+                                   style="float:right">
+                        </div>
+                        <div class="col-12 col-md-9"></div>
+                    </form>
+
+                </div>
+                <form method="post">
+                    <div class="row form-group">
+                        <div class="col col-md-3"><label for="dalei" class=" form-control-label">选择大类</label></div>
+                        <div class="col-12 col-md-9">
+                            <select name="dalei" id="dalei" class="form-control-sm form-control"
+                                    onchange="gradeChange()">
+                                {% for i in dalei %}
+                                <option value="{{i}}">{{i}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col col-md-3"><label for="name" class=" form-control-label">选择名称</label></div>
+                        <div class="col-12 col-md-9">
+                            <select name="name" id="name" class="form-control-sm form-control">
+                                {% for i in names%}
+                                <option value="{{i}}">{{i}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <input type="submit" class="btn btn-success" value="提交" style="float:right">
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6" style="width:100%;float:right">
+        <div class="card">
+            <div class="card-header">
+                <strong class="card-title">{{tb_header}}</strong>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        {% for i in colnames %}
+                        <td>{{i}}</td>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in predict_data%}
+                    <tr>
+                        <td>{{i.name}}</td>
+                        {% set outerloop=loop %}
+                        {% for j in i.data %}
+                        <td>{{j}}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<div id="container" style="width: 100%;height: 500px;margin-top:400px">
+</div> <!-- .content -->
+{% endblock %}
+{% block script %}
+<script src="static/assets/js/lib/chart-js/echarts.common.min.js"></script>
+<script src="static/assets/js/vendor/jquery-2.1.4.min.js"></script>
+<script>
+    function gradeChange(){
+        var objS = document.getElementById("dalei");
+        var grade = objS.options[objS.selectedIndex].value;
+        $.post("{{url_for('name')}}",{'class1':grade},function aa(result){
+            var select = document.getElementById("name");
+            select.options.length = 0;
+            for (var i = 0; i < result.length; i++){
+                select.options.add(new Option(result[i], result[i]));
+            };
+        });
+       };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<script>
+var dom = document.getElementById("container");
+var myChart = echarts.init(dom);
+var app = {};
+option = null;
+option = {
+    title: {
+        text: "{{char_name}}"
+    },
+    tooltip: {
+        trigger: 'axis'
+    },
+    legend: {
+        data:{{ legend|tojson }}
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    toolbox: {
+        feature: {
+            saveAsImage: {}
+        }
+    },
+    xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: {{xAxis|tojson}}
+    },
+    yAxis: {
+        type: 'value'
+    },
+    series:[
+    {% for line in lines %}
+    {
+        name:{{[line][0][0]|tojson}},
+        type:'line',
+        stack: '总量',
+        data:{{[line][0][1]|tojson}}
+    },
+    {% endfor %}
+    ]
+};
+;
+if (option && typeof option === "object") {
+    myChart.setOption(option, true);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+<!--{-->
+<!--name:'测试',-->
+<!--type:'line',-->
+<!--stack: '总量',-->
+<!--data:[, , , , , 230, 210]-->
+<!--},-->
+<!--{-->
+<!--name:'联盟广告',-->
+<!--type:'line',-->
+<!--stack: '总量',-->
+<!--data:[220, 182, 191, 234, 290]-->
+<!--},-->
+<!--{-->
+<!--name:'视频广告',-->
+<!--type:'line',-->
+<!--stack: '总量',-->
+<!--data:[150, 232, 201, 154, 190, 330, 410]-->
+<!--},-->
+<!--{-->
+<!--name:'直接访问',-->
+<!--type:'line',-->
+<!--stack: '总量',-->
+<!--data:[320, 332, 301, 334, 390, 330, 320]-->
+<!--},-->
+<!--{-->
+<!--name:'搜索引擎',-->
+<!--type:'line',-->
+<!--stack: '总量',-->
+<!--data:[820, 932, 901, 934, 1290, 1330, 1320]-->
+<!--}-->
+{% endblock %}
+
